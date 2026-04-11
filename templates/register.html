@@ -13,11 +13,19 @@
         </div>
 
         <div class="auth-card">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="auth-error">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
             {% if error %}
             <div class="auth-error">{{ error }}</div>
             {% endif %}
 
-            <form method="POST" action="/register">
+            <form method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
                     <label for="name">Full name</label>
                     <input type="text" id="name" name="name"
