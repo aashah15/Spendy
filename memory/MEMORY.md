@@ -1,0 +1,1 @@
+- [Currency Preference](currency_preference.md) — Project uses INR (Indian Rupee) format, not USD
