@@ -133,3 +133,28 @@ def create_user(name, email, password):
     conn.close()
 
     return user_id
+
+
+def get_user_by_email(email):
+    """
+    Fetches a user by email address.
+
+    Args:
+        email: User's email address
+
+    Returns:
+        User dict with id, name, email, password_hash if found, None otherwise
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, name, email, password_hash
+        FROM users
+        WHERE email = ?
+    """, (email,))
+
+    user = cursor.fetchone()
+    conn.close()
+
+    return user
