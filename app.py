@@ -124,7 +124,42 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    # Auth guard - redirect if not logged in
+    if not session.get("user_id"):
+        flash("Please log in to view your profile", "info")
+        return redirect(url_for("login"))
+
+    # Hardcoded user data (Step 4 - no DB yet)
+    user = {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "member_since": "January 15, 2026"
+    }
+
+    # Hardcoded summary stats
+    stats = {
+        "total_spent": "Rs. 45,250",
+        "transaction_count": 24,
+        "top_category": "Food & Dining"
+    }
+
+    # Hardcoded transaction history
+    transactions = [
+        {"date": "Apr 18, 2026", "description": "Grocery shopping", "category": "Food", "amount": "Rs. 3,500"},
+        {"date": "Apr 15, 2026", "description": "Uber ride", "category": "Transport", "amount": "Rs. 450"},
+        {"date": "Apr 12, 2026", "description": "Netflix subscription", "category": "Entertainment", "amount": "Rs. 650"},
+        {"date": "Apr 10, 2026", "description": "Electricity bill", "category": "Utilities", "amount": "Rs. 2,800"},
+    ]
+
+    # Hardcoded category breakdown
+    categories = [
+        {"name": "Food & Dining", "amount": "Rs. 18,500", "percentage": 41},
+        {"name": "Transport", "amount": "Rs. 8,200", "percentage": 18},
+        {"name": "Utilities", "amount": "Rs. 10,550", "percentage": 23},
+        {"name": "Entertainment", "amount": "Rs. 8,000", "percentage": 18},
+    ]
+
+    return render_template("profile.html", user=user, stats=stats, transactions=transactions, categories=categories)
 
 
 @app.route("/expenses/add")
