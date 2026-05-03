@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 from database.db import init_db, seed_db, create_user, get_user_by_email
+from database.queries import get_user_by_id, get_recent_transactions, get_summary_stats, get_category_breakdown
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
@@ -129,35 +130,22 @@ def profile():
         flash("Please log in to view your profile", "info")
         return redirect(url_for("login"))
 
-    # Hardcoded user data (Step 4 - no DB yet)
-    user = {
-        "name": "John Doe",
-        "email": "john.doe@example.com",
-        "member_since": "January 15, 2026"
-    }
+    user_id = session.get("user_id")
 
-    # Hardcoded summary stats
-    stats = {
-        "total_spent": "Rs. 45,250",
-        "transaction_count": 24,
-        "top_category": "Food & Dining"
-    }
+    # Get real user data from database
+    user = get_user_by_id(user_id)
+    if not user:
+        flash("User profile not found", "error")
+        return redirect(url_for("login"))
+
+    # Summary stats from database
+    stats = get_summary_stats(user_id)
 
     # Hardcoded transaction history
-    transactions = [
-        {"date": "Apr 18, 2026", "description": "Grocery shopping", "category": "Food", "amount": "Rs. 3,500"},
-        {"date": "Apr 15, 2026", "description": "Uber ride", "category": "Transport", "amount": "Rs. 450"},
-        {"date": "Apr 12, 2026", "description": "Netflix subscription", "category": "Entertainment", "amount": "Rs. 650"},
-        {"date": "Apr 10, 2026", "description": "Electricity bill", "category": "Utilities", "amount": "Rs. 2,800"},
-    ]
+    transactions = get_recent_transactions(user_id)
 
-    # Hardcoded category breakdown
-    categories = [
-        {"name": "Food & Dining", "amount": "Rs. 18,500", "percentage": 41},
-        {"name": "Transport", "amount": "Rs. 8,200", "percentage": 18},
-        {"name": "Utilities", "amount": "Rs. 10,550", "percentage": 23},
-        {"name": "Entertainment", "amount": "Rs. 8,000", "percentage": 18},
-    ]
+    # Category breakdown from database
+    categories = get_category_breakdown(user_id)
 
     return render_template("profile.html", user=user, stats=stats, transactions=transactions, categories=categories)
 
