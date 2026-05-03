@@ -2,6 +2,20 @@ import sqlite3
 from datetime import datetime
 from database.db import get_db
 
+def _build_date_filter(user_id, start_date=None, end_date=None):
+    """
+    Helper to build the WHERE clause and parameters for date filtering.
+    """
+    params = [user_id]
+    clause = "WHERE user_id = ?"
+    if start_date:
+        clause += " AND date >= ?"
+        params.append(start_date)
+    if end_date:
+        clause += " AND date <= ?"
+        params.append(end_date)
+    return clause, params
+
 def get_user_by_id(user_id):
     """
     Fetches a user by their ID and formats the membership date.
@@ -34,20 +48,26 @@ def get_user_by_id(user_id):
 
     return None
 
-def get_summary_stats(user_id: int):
+def get_summary_stats(user_id: int, start_date: str = None, end_date: str = None):
     """
-    Returns summary stats for the given user.
+    Returns summary stats for the given user, optionally filtered by date range.
 
     Returns:
         dict: {"total_spent": float, "transaction_count": int, "top_category": str}
     """
+    # Handle logical impossibility: start_date > end_date
+    if start_date and end_date and start_date > end_date:
+        return {"total_spent": 0.0, "transaction_count": 0, "top_category": "—"}
+
     conn = get_db()
     cursor = conn.cursor()
 
+    where_clause, query_params = _build_date_filter(user_id, start_date, end_date)
+
     # Total spent and transaction count
     cursor.execute(
-        "SELECT SUM(amount), COUNT(*) FROM expenses WHERE user_id = ?",
-        (user_id,)
+        f"SELECT SUM(amount), COUNT(*) FROM expenses {where_clause}",
+        tuple(query_params)
     )
     row = cursor.fetchone()
     total_spent = row[0] if row and row[0] else 0.0
@@ -55,8 +75,8 @@ def get_summary_stats(user_id: int):
 
     # Top category
     cursor.execute(
-        "SELECT category FROM expenses WHERE user_id = ? GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
-        (user_id,)
+        f"SELECT category FROM expenses {where_clause} GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
+        tuple(query_params)
     )
     top_cat_row = cursor.fetchone()
     top_category = top_cat_row[0] if top_cat_row else "—"
@@ -68,20 +88,26 @@ def get_summary_stats(user_id: int):
         "top_category": top_category
     }
 
-def get_category_breakdown(user_id: int):
+def get_category_breakdown(user_id: int, start_date: str = None, end_date: str = None):
     """
-    Returns a category breakdown for the given user.
+    Returns a category breakdown for the given user, optionally filtered by date range.
 
     Returns:
         list: [{"name": str, "amount": float, "pct": int}, ...]
     """
+    # Handle logical impossibility: start_date > end_date
+    if start_date and end_date and start_date > end_date:
+        return []
+
     conn = get_db()
     cursor = conn.cursor()
 
+    where_clause, query_params = _build_date_filter(user_id, start_date, end_date)
+
     # Get totals per category
     cursor.execute(
-        "SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-        (user_id,)
+        f"SELECT category, SUM(amount) as total FROM expenses {where_clause} GROUP BY category ORDER BY total DESC",
+        tuple(query_params)
     )
     rows = cursor.fetchall()
 
@@ -115,19 +141,25 @@ def get_category_breakdown(user_id: int):
     conn.close()
     return breakdown
 
-def get_recent_transactions(user_id: int, limit: int = 10):
+def get_recent_transactions(user_id: int, limit: int = 10, start_date: str = None, end_date: str = None):
     """
-    Fetches the most recent transactions for a user.
+    Fetches the most recent transactions for a user, optionally filtered by date range.
 
     Returns:
         list: A list of dicts containing date, description, category, and amount.
     """
+    # Handle logical impossibility: start_date > end_date
+    if start_date and end_date and start_date > end_date:
+        return []
+
     conn = get_db()
     cursor = conn.cursor()
 
+    where_clause, query_params = _build_date_filter(user_id, start_date, end_date)
+
     cursor.execute(
-        "SELECT date, description, category, amount FROM expenses WHERE user_id = ? ORDER BY date DESC LIMIT ?",
-        (user_id, limit)
+        f"SELECT date, description, category, amount FROM expenses {where_clause} ORDER BY date DESC LIMIT ?",
+        tuple(query_params + [limit])
     )
     rows = cursor.fetchall()
     conn.close()

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for, ses
 from database.db import init_db, seed_db, create_user, get_user_by_email
 from database.queries import get_user_by_id, get_recent_transactions, get_summary_stats, get_category_breakdown
 from werkzeug.security import check_password_hash
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "spendly-secret-key-change-in-production"
@@ -132,6 +133,41 @@ def profile():
 
     user_id = session.get("user_id")
 
+    # Date filter parameters
+    period = request.args.get("period")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    # Basic date validation to prevent DB errors from malformed input
+    def is_valid_date(date_str):
+        if not date_str: return True
+        try:
+            datetime.strptime(date_str, '%Y-%m-%d')
+            return True
+        except ValueError:
+            return False
+
+    if not is_valid_date(start_date) or not is_valid_date(end_date):
+        # If dates are invalid, we treat them as None so the DB uses default behavior (all time)
+        start_date = None if not is_valid_date(start_date) else start_date
+        end_date = None if not is_valid_date(end_date) else end_date
+
+    # Handle quick-filter periods
+    if period:
+        today = datetime.now()
+        if period == "1m":
+            # Start of current month
+            start_date = today.replace(day=1).strftime('%Y-%m-%d')
+        elif period == "3m":
+            # ~90 days ago
+            start_date = (today - timedelta(days=90)).strftime('%Y-%m-%d')
+        elif period == "6m":
+            # ~180 days ago
+            start_date = (today - timedelta(days=180)).strftime('%Y-%m-%d')
+
+        if not end_date:
+            end_date = today.strftime('%Y-%m-%d')
+
     # Get real user data from database
     user = get_user_by_id(user_id)
     if not user:
@@ -139,15 +175,23 @@ def profile():
         return redirect(url_for("login"))
 
     # Summary stats from database
-    stats = get_summary_stats(user_id)
+    stats = get_summary_stats(user_id, start_date=start_date, end_date=end_date)
 
-    # Hardcoded transaction history
-    transactions = get_recent_transactions(user_id)
+    # Transaction history
+    transactions = get_recent_transactions(user_id, start_date=start_date, end_date=end_date)
 
     # Category breakdown from database
-    categories = get_category_breakdown(user_id)
+    categories = get_category_breakdown(user_id, start_date=start_date, end_date=end_date)
 
-    return render_template("profile.html", user=user, stats=stats, transactions=transactions, categories=categories)
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+        start_date=start_date,
+        end_date=end_date
+    )
 
 
 @app.route("/expenses/add")
