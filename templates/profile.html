@@ -229,6 +229,78 @@
     .cat-bar.utilities { background: #a07bd6; }
     .cat-bar.entertainment { background: #e74c3c; }
 
+    .filter-card.section-card {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+    .quick-filters {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .filter-chip {
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        color: var(--ink-muted);
+        background: var(--paper-card);
+        transition: all 0.2s ease;
+    }
+    .filter-chip:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-light);
+    }
+    .filter-chip.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+
+    .date-filter-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .filter-group label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--ink-muted);
+    }
+    .filter-group input {
+        padding: 0.5rem;
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-body);
+        color: var(--ink);
+    }
+    .filter-button {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .reset-button {
+        text-decoration: none;
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+        padding: 0.6rem 0;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .stats-row {
@@ -268,6 +340,25 @@
             <p class="user-email">{{ user.email }}</p>
             <p class="member-since">Member since {{ user.member_since }}</p>
         </div>
+    </div>
+
+    <!-- Date Filters -->
+    <div class="filter-card section-card">
+        <div class="quick-filters">
+            <a href="{{ url_for('profile', period='1m') }}" class="filter-chip {% if request.args.get('period') == '1m' %}active{% endif %}">This Month</a>
+            <a href="{{ url_for('profile', period='3m') }}" class="filter-chip {% if request.args.get('period') == '3m' %}active{% endif %}">Last 3 Months</a>
+            <a href="{{ url_for('profile', period='6m') }}" class="filter-chip {% if request.args.get('period') == '6m' %}active{% endif %}">Last 6 Months</a>
+        </div>
+        <form method="GET" action="{{ url_for('profile') }}" class="date-filter-form">
+            <div class="filter-group">
+                <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}">
+            </div>
+            <div class="filter-group">
+                <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}">
+            </div>
+            <button type="submit" class="filter-button">Filter</button>
+            <a href="{{ url_for('profile') }}" class="reset-button">Reset</a>
+        </form>
     </div>
 
     <!-- Summary Stats -->
