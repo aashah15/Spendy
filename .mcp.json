@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "sqlite": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "--db",
+        "D:/AI/Claude Code/expense-tracker/spendly.db"
+      ]
+    }
+  }
+}

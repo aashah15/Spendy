@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl -s -b cookies.txt http://localhost:5001/profile)"
+      "Bash(curl -s -b cookies.txt http://localhost:5001/profile)",
+      "mcp__sqlite__list_tables",
+      "mcp__sqlite__describe_table",
+      "Bash(sqlite3 spendly.db \".tables\")",
+      "Bash(python3 *)",
+      "mcp__sqlite__read_query",
+      "Bash(python *)",
+      "mcp__plugin_figma_figma__get_design_context"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "sqlite"
+  ]
 }
