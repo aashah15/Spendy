@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(curl -s -b cookies.txt http://localhost:5001/profile)",
-      "Bash(python *)"
+      "mcp__sqlite__list_tables",
+      "mcp__sqlite__describe_table",
+      "Bash(sqlite3 spendly.db \".tables\")",
+      "Bash(python3 *)",
+      "mcp__sqlite__read_query",
+      "Bash(python *)",
+      "mcp__plugin_figma_figma__get_design_context",
+      "Bash(curl -s -L -c cookies.txt -d \"email=demo@spendly.com&password=demo123\" http://localhost:5001/login)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "sqlite"
+  ]
 }

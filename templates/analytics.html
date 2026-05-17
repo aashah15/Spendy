@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">Coming Soon</div>
+        <h1 class="hero-title">Analytics <span class="hero-title-green">&amp; Insights</span></h1>
+        <p class="hero-subtitle">
+            We're building powerful tools to help you visualize your spending patterns, track category trends, and master your personal finances.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('profile') }}" class="btn-secondary">Back to Profile</a>
+        </div>
+    </div>
+</div>
+
+<div class="hero-dashboard">
+    <div class="dashboard-mock">
+        <div class="dashboard-header">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+        </div>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <span class="stat-label">Monthly Trend</span>
+                <span class="stat-value">--</span>
+                <span class="stat-sub">Analyzing data...</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Savings Rate</span>
+                <span class="stat-value">--</span>
+                <span class="stat-sub">Calculating...</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Top Category</span>
+                <span class="stat-value">--</span>
+                <span class="stat-sub">Processing...</span>
+            </div>
+        </div>
+        <div class="dashboard-categories">
+            <div class="cat-row">
+                <span class="cat-name">Spending Analysis</span>
+                <div class="cat-bar-track">
+                    <div class="cat-bar cat-bar-food" style="width: 40%"></div>
+                </div>
+            </div>
+            <div class="cat-row">
+                <span class="cat-name">Budget Forecast</span>
+                <div class="cat-bar-track">
+                    <div class="cat-bar cat-bar-travel" style="width: 60%"></div>
+                </div>
+            </div>
+            <div class="cat-row">
+                <span class="cat-name">Cash Flow</span>
+                <div class="cat-bar-track">
+                    <div class="cat-bar cat-bar-bills" style="width: 30%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
