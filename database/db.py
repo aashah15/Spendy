@@ -135,6 +135,35 @@ def create_user(name, email, password):
     return user_id
 
 
+def add_expense(user_id, amount, category, date, description=None):
+    """
+    Inserts a new expense record for a specific user.
+
+    Args:
+        user_id: The ID of the authenticated user
+        amount: The expense amount (REAL)
+        category: The expense category (TEXT)
+        date: The date of the expense in YYYY-MM-DD format (TEXT)
+        description: Optional description of the expense (TEXT)
+
+    Returns:
+        The id of the newly created expense record
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO expenses (user_id, amount, category, date, description, created_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now'))
+    """, (user_id, amount, category, date, description))
+
+    new_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    return new_id
+
+
 def get_user_by_email(email):
     """
     Fetches a user by email address.

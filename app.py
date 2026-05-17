@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session
-from database.db import init_db, seed_db, create_user, get_user_by_email
+from database.db import init_db, seed_db, create_user, get_user_by_email, add_expense as db_add_expense
 from database.queries import get_user_by_id, get_recent_transactions, get_summary_stats, get_category_breakdown
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
@@ -204,9 +204,49 @@ def analytics():
     return render_template("analytics.html")
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    # Auth guard - redirect if not logged in
+    if not session.get("user_id"):
+        flash("Please log in to add an expense", "info")
+        return redirect(url_for("login"))
+
+    user_id = session.get("user_id")
+
+    if request.method == "POST":
+        # Extract form data
+        amount_str = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        # Validate inputs
+        if not amount_str or not category or not date:
+            return render_template("add_expense.html", error="Amount, category, and date are required", amount=amount_str, category=category, date=date, description=description)
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                return render_template("add_expense.html", error="Amount must be a positive number", amount=amount_str, category=category, date=date, description=description)
+        except ValueError:
+            return render_template("add_expense.html", error="Amount must be a valid number", amount=amount_str, category=category, date=date, description=description)
+
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return render_template("add_expense.html", error="Invalid date format. Please use YYYY-MM-DD", amount=amount_str, category=category, date=date, description=description)
+
+        # Save to database
+        try:
+            db_add_expense(user_id, amount, category, date, description)
+            flash("Expense added successfully!", "success")
+            return redirect(url_for("profile"))
+        except Exception as e:
+            app.logger.error(f"Error adding expense for user {user_id}: {e}")
+            return render_template("add_expense.html", error="An unexpected error occurred. Please try again.", amount=amount_str, category=category, date=date, description=description)
+
+    # GET request - display the form
+    return render_template("add_expense.html")
 
 
 @app.route("/expenses/<int:id>/edit")
